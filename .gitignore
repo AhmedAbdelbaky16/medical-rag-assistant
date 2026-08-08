@@ -1,0 +1,29 @@
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Conda
+# (conda envs usually live outside the repo, but just in case)
+*.conda/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Downloaded/generated data — large and reproducible via scripts,
+# so we don't want it bloating the git repo
+data/raw/*.xml
+data/processed/*.json
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# Environment secrets (API keys, DB passwords) — added in later phases
+.env
+
+# OS/editor junk
+.DS_Store
+.idea/
+.vscode/
+*.swp
