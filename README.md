@@ -22,7 +22,7 @@ cd medical-rag-assistant
 - [x] Phase 1 — Data ingestion & cleaning
 - [x] Phase 2 — Database setup (Docker + Postgres)
 - [x] Phase 3 — SQL schema & structured data
-- [ ] Phase 4 — Tokenization & chunking
+- [x] Phase 4 — Tokenization & chunking
 - [ ] Phase 5 — Embeddings
 - [ ] Phase 6 — Hybrid retrieval
 - [ ] Phase 7 — Generation
@@ -67,12 +67,14 @@ rag-medical-assistant/
 │   ├── raw/            # raw SPL XML labels from DailyMed
 │   └── processed/      # cleaned, section-parsed JSON
 ├── sql/
-│   └── schema.sql        # drugs + sections table definitions
+│   └── schema.sql        # drugs + sections + chunks table definitions
 ├── src/
-│   ├── config.py           # paths, drug list, API config, DB config
+│   ├── config.py           # paths, drug list, API config, DB config, chunking config
 │   ├── download_labels.py  # Phase 1a: pull labels from DailyMed
 │   ├── parse_labels.py     # Phase 1b: clean + section-parse XML
-│   └── load_to_db.py       # Phase 3: apply schema + load JSON into Postgres
+│   ├── load_to_db.py       # Phase 3: apply schema + load JSON into Postgres
+│   ├── chunking.py         # Phase 4: core chunking algorithm (unit-testable)
+│   └── chunk_and_load.py   # Phase 4: tokenize + chunk all sections, write to DB
 ├── notebooks/            # scratch/exploration (not part of the pipeline)
 ├── docker-compose.yml
 ├── requirements.txt
@@ -136,6 +138,41 @@ commands above, or a GUI client like [DBeaver](https://dbeaver.io/)
 (free) connecting to `localhost:5432`, database `medical_rag`, using
 the credentials in `docker-compose.yml`.
 
+## Phase 4 — Tokenization & chunking
+
+Sections vary a lot in length — some are a sentence or two, others
+(like drug interaction or pharmacokinetics sections) run to thousands
+of words. Chunking splits long sections into smaller, focused pieces
+before embedding, since one embedding for a huge section would be a
+vague "average" of many unrelated ideas.
+
+Strategy (see `src/chunking.py` for the full logic and inline
+explanation):
+- A section that already fits within the max chunk size stays as one
+  chunk, untouched.
+- Longer sections are split at sentence boundaries, packed greedily up
+  to a target size, with the tail of each chunk overlapping into the
+  next one for continuity.
+- A rare edge case — a single "sentence" that's already too long on
+  its own (this happens with flattened data tables that have almost
+  no real sentence breaks) — falls back to splitting by words instead.
+
+Token counts use the real tokenizer from the embedding model we'll use
+in Phase 5 (`BAAI/bge-small-en-v1.5`), so chunk sizes are accurate to
+what actually matters downstream.
+
+```bash
+python chunk_and_load.py
+```
+
+First run downloads the tokenizer files from Hugging Face (small,
+one-time, cached afterward).
+
+Verify:
+```bash
+docker exec -it medical-rag-db psql -U raguser -d medical_rag -c "SELECT COUNT(*) FROM chunks;"
+```
+
 ## Design notes
 
 - **Why the API instead of the bulk zip downloads?** DailyMed's full
@@ -172,3 +209,22 @@ the credentials in `docker-compose.yml`.
   every run, instead of diffing?** Sections are fully derived from the
   JSON with no user edits to preserve, so a full replace is simpler
   and safer than trying to reconcile partial changes.
+- **Why token-based chunk sizing instead of character-based?**
+  Embedding models see tokens, not characters, and token-to-character
+  ratio varies with word length — medical text especially, given long
+  words like "hyperchloremic." Measuring with the actual tokenizer
+  means chunk sizes are accurate to what the model actually sees.
+- **Why section-aware chunking instead of fixed-size chunking across
+  the whole label?** Sections aren't uniform length — a fixed chunk
+  size either pointlessly splits short, already-coherent sections or
+  barely dents long ones. Respecting section boundaries first, and
+  only splitting further when a section is actually too long, avoids
+  both problems.
+- **Why overlap between chunks?** Cutting a long section at a hard
+  boundary can strand a sentence like "the risk factors listed above"
+  without its antecedent. Carrying the last portion of one chunk into
+  the start of the next preserves that continuity.
+- **Why `tokenizers` instead of the full `transformers` library?** We
+  only need tokenization in Phase 4, not the actual embedding model
+  yet (that's Phase 5) — `tokenizers` avoids pulling in `transformers`
+  and eventually `torch` before they're actually needed.
