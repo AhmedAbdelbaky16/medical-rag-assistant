@@ -16,6 +16,19 @@ PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
 # --- DailyMed API --------------------------------------------------------
 DAILYMED_BASE_URL = "https://dailymed.nlm.nih.gov/dailymed/services/v2"
 
+# --- Database --------------------------------------------------------
+# These match docker-compose.yml. Local dev only — fine to keep as
+# plain values for now since this only ever runs against your own
+# local container. If this project ever talked to a real/shared
+# database, these would move into a .env file kept out of git instead.
+DB_CONFIG = {
+    "host": "localhost",
+    "port": 5432,
+    "dbname": "medical_rag",
+    "user": "raguser",
+    "password": "ragpassword",
+}
+
 # --- Curated drug list ---------------------------------------------------
 # ~40 well-known drugs spanning a few categories, so eval questions later
 # can cover different drug classes rather than all being near-duplicates.
