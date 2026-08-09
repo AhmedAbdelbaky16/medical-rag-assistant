@@ -21,7 +21,7 @@ cd medical-rag-assistant
 - [x] Phase 0 — Project setup
 - [x] Phase 1 — Data ingestion & cleaning
 - [x] Phase 2 — Database setup (Docker + Postgres)
-- [ ] Phase 3 — SQL schema & structured data
+- [x] Phase 3 — SQL schema & structured data
 - [ ] Phase 4 — Tokenization & chunking
 - [ ] Phase 5 — Embeddings
 - [ ] Phase 6 — Hybrid retrieval
@@ -66,11 +66,15 @@ rag-medical-assistant/
 ├── data/
 │   ├── raw/            # raw SPL XML labels from DailyMed
 │   └── processed/      # cleaned, section-parsed JSON
+├── sql/
+│   └── schema.sql        # drugs + sections table definitions
 ├── src/
-│   ├── config.py        # paths, drug list, API config
+│   ├── config.py           # paths, drug list, API config, DB config
 │   ├── download_labels.py  # Phase 1a: pull labels from DailyMed
-│   └── parse_labels.py     # Phase 1b: clean + section-parse XML
+│   ├── parse_labels.py     # Phase 1b: clean + section-parse XML
+│   └── load_to_db.py       # Phase 3: apply schema + load JSON into Postgres
 ├── notebooks/            # scratch/exploration (not part of the pipeline)
+├── docker-compose.yml
 ├── requirements.txt
 └── README.md
 ```
@@ -103,6 +107,35 @@ docker compose down
 delete it. `docker compose down -v` would, if you ever want a clean
 slate.)
 
+## Phase 3 — SQL schema & structured data
+
+Two tables: `drugs` (one row per drug) and `sections` (one row per
+label section, linked to its drug via a foreign key). See
+`sql/schema.sql` for the full definitions and inline comments
+explaining each design choice.
+
+Load all parsed JSON into the database:
+```bash
+cd src
+python load_to_db.py
+```
+
+This applies the schema (safe to re-run) and loads every file in
+`data/processed/`. Re-running is idempotent — existing drugs are
+updated rather than duplicated, and each drug's sections are fully
+replaced from the current JSON rather than appended to.
+
+Verify:
+```bash
+docker exec -it medical-rag-db psql -U raguser -d medical_rag -c "SELECT COUNT(*) FROM drugs;"
+docker exec -it medical-rag-db psql -U raguser -d medical_rag -c "SELECT COUNT(*) FROM sections;"
+```
+
+**Browsing the data:** either `psql` directly via the `docker exec`
+commands above, or a GUI client like [DBeaver](https://dbeaver.io/)
+(free) connecting to `localhost:5432`, database `medical_rag`, using
+the credentials in `docker-compose.yml`.
+
 ## Design notes
 
 - **Why the API instead of the bulk zip downloads?** DailyMed's full
@@ -125,3 +158,17 @@ slate.)
 - **Why Docker Compose instead of a bare `docker run`?** Reproducible,
   version-controlled, and it's where later services (backend,
   frontend) get added in Phase 10 so the whole stack starts together.
+- **Why two tables (`drugs`, `sections`) instead of one flat table?**
+  A drug's name would otherwise repeat across every one of its
+  sections — wasted storage, and a typo fix would need updating many
+  rows instead of one. Splitting into a one-to-many relationship
+  (drug → many sections) linked by a foreign key avoids that.
+- **Why `pg8000` instead of `psycopg2`?** Same Python 3.14 wheel-build
+  issue as `lxml` in Phase 1 — `psycopg2-binary` has no prebuilt wheel
+  yet for this Python version and needs a C compiler to build from
+  source. `pg8000` is a pure-Python driver, so it installs instantly
+  with no extra tooling.
+- **Why does `load_to_db.py` delete + reinsert a drug's sections on
+  every run, instead of diffing?** Sections are fully derived from the
+  JSON with no user edits to preserve, so a full replace is simpler
+  and safer than trying to reconcile partial changes.
