@@ -20,7 +20,7 @@ cd medical-rag-assistant
 ## Status
 - [x] Phase 0 — Project setup
 - [x] Phase 1 — Data ingestion & cleaning
-- [ ] Phase 2 — Database setup (Docker + Postgres)
+- [x] Phase 2 — Database setup (Docker + Postgres)
 - [ ] Phase 3 — SQL schema & structured data
 - [ ] Phase 4 — Tokenization & chunking
 - [ ] Phase 5 — Embeddings
@@ -75,6 +75,34 @@ rag-medical-assistant/
 └── README.md
 ```
 
+## Phase 2 — Database setup
+
+Requires [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+(with WSL2 backend on Windows) installed and running.
+
+```bash
+docker compose up -d
+```
+
+This starts a PostgreSQL 16 container with the `pgvector` extension
+pre-installed, on `localhost:5432`. Credentials (local dev only, not
+used anywhere public) are set in `docker-compose.yml`.
+
+Verify it's running:
+```bash
+docker ps
+docker exec -it medical-rag-db psql -U raguser -d medical_rag -c "CREATE EXTENSION IF NOT EXISTS vector; SELECT extname FROM pg_extension;"
+```
+You should see `vector` and `plpgsql` listed.
+
+To stop the database:
+```bash
+docker compose down
+```
+(Data persists in a Docker volume — `docker compose down` does not
+delete it. `docker compose down -v` would, if you ever want a clean
+slate.)
+
 ## Design notes
 
 - **Why the API instead of the bulk zip downloads?** DailyMed's full
@@ -89,3 +117,11 @@ rag-medical-assistant/
   afterward.
 - **Empty sections are dropped**, not stored — no point embedding or
   indexing sections with no content.
+- **Why `pgvector/pgvector` instead of separate SQL + vector databases?**
+  One database doing both jobs (structured filtering *and* vector
+  similarity search) keeps hybrid retrieval simple — a single SQL query
+  can filter by drug/section and rank by embedding distance in one
+  step, instead of coordinating two separate systems.
+- **Why Docker Compose instead of a bare `docker run`?** Reproducible,
+  version-controlled, and it's where later services (backend,
+  frontend) get added in Phase 10 so the whole stack starts together.

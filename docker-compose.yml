@@ -1,0 +1,21 @@
+# Phase 2 — PostgreSQL + pgvector, run via Docker Compose instead of a
+# long `docker run` command. This also sets up a named volume so your
+# data survives container restarts, and makes it trivial to add the
+# backend/frontend services here in later phases (Phase 10).
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: medical-rag-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: raguser
+      POSTGRES_PASSWORD: ragpassword
+      POSTGRES_DB: medical_rag
+    ports:
+      - "5432:5432"
+    volumes:
+      - medical_rag_pgdata:/var/lib/postgresql/data
+
+volumes:
+  medical_rag_pgdata:
