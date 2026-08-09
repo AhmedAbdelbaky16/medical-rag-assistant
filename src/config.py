@@ -16,6 +16,15 @@ PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
 # --- DailyMed API --------------------------------------------------------
 DAILYMED_BASE_URL = "https://dailymed.nlm.nih.gov/dailymed/services/v2"
 
+# --- Chunking (Phase 4) --------------------------------------------------
+# Tokenizer matches the embedding model we'll use in Phase 5, so token
+# counts here are accurate for what actually matters later.
+EMBEDDING_MODEL_NAME = "BAAI/bge-small-en-v1.5"
+
+CHUNK_TARGET_TOKENS = 300
+CHUNK_MAX_TOKENS = 400
+CHUNK_OVERLAP_TOKENS = 50
+
 # --- Database --------------------------------------------------------
 # These match docker-compose.yml. Local dev only — fine to keep as
 # plain values for now since this only ever runs against your own

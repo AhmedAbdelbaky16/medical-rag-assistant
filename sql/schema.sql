@@ -1,13 +1,13 @@
--- Phase 3 — Database schema
+-- Phase 3/4 — Database schema
 --
--- Two tables for now:
+-- Three tables:
 --   drugs    — one row per drug (the structured facts)
 --   sections — one row per section of a drug's label (the text content)
---
--- A "chunks" table gets added in Phase 4/5, once we start splitting
--- sections into smaller pieces for embedding. We're not building it
--- yet because we don't need it yet — adding tables as each phase
--- actually needs them keeps the schema easy to follow.
+--   chunks   — one row per chunk: a section split into smaller,
+--              embeddable pieces (Phase 4). No embedding column yet —
+--              that gets added via ALTER TABLE in Phase 5, once we
+--              actually generate embeddings. Adding it only when we
+--              need it keeps each phase's schema change easy to follow.
 
 -- Make sure pgvector is enabled (idempotent — safe to run every time)
 CREATE EXTENSION IF NOT EXISTS vector;
@@ -64,3 +64,35 @@ CREATE TABLE IF NOT EXISTS sections (
 -- built (Phase 6). Without this index, Postgres scans the whole table
 -- every time. With it, this becomes a fast lookup.
 CREATE INDEX IF NOT EXISTS idx_sections_drug_id ON sections(drug_id);
+
+-- ---------------------------------------------------------------------
+-- chunks: one row per chunk (a section split into smaller pieces)
+-- ---------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS chunks (
+    chunk_id     SERIAL PRIMARY KEY,
+
+    section_id   INTEGER NOT NULL REFERENCES sections(section_id) ON DELETE CASCADE,
+
+    drug_id      INTEGER NOT NULL REFERENCES drugs(drug_id) ON DELETE CASCADE,
+    -- This duplicates information we could already get by joining
+    -- through sections -> drugs. We store it directly anyway because
+    -- Phase 6's hybrid retrieval will constantly filter chunks by
+    -- drug_id ("only search ibuprofen's chunks") — having it right on
+    -- this table avoids a join on every single retrieval query. This
+    -- kind of deliberate duplication for read speed is called
+    -- denormalization — a tradeoff of a bit of redundancy for faster
+    -- reads, reasonable here since a chunk's drug never changes once
+    -- created.
+
+    chunk_index  INTEGER NOT NULL,
+    -- Position of this chunk within its section (0, 1, 2, ...) — lets
+    -- us reconstruct order, or show "chunk 2 of 5" in a UI later.
+
+    chunk_text   TEXT NOT NULL,
+    token_count  INTEGER NOT NULL,
+
+    created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_chunks_section_id ON chunks(section_id);
+CREATE INDEX IF NOT EXISTS idx_chunks_drug_id ON chunks(drug_id);
