@@ -23,7 +23,7 @@ cd medical-rag-assistant
 - [x] Phase 2 — Database setup (Docker + Postgres)
 - [x] Phase 3 — SQL schema & structured data
 - [x] Phase 4 — Tokenization & chunking
-- [ ] Phase 5 — Embeddings
+- [x] Phase 5 — Embeddings
 - [ ] Phase 6 — Hybrid retrieval
 - [ ] Phase 7 — Generation
 - [ ] Phase 8 — Backend API
@@ -74,7 +74,8 @@ rag-medical-assistant/
 │   ├── parse_labels.py     # Phase 1b: clean + section-parse XML
 │   ├── load_to_db.py       # Phase 3: apply schema + load JSON into Postgres
 │   ├── chunking.py         # Phase 4: core chunking algorithm (unit-testable)
-│   └── chunk_and_load.py   # Phase 4: tokenize + chunk all sections, write to DB
+│   ├── chunk_and_load.py   # Phase 4: tokenize + chunk all sections, write to DB
+│   └── embed_and_load.py   # Phase 5: generate + store embeddings via pgvector
 ├── notebooks/            # scratch/exploration (not part of the pipeline)
 ├── docker-compose.yml
 ├── requirements.txt
@@ -173,6 +174,34 @@ Verify:
 docker exec -it medical-rag-db psql -U raguser -d medical_rag -c "SELECT COUNT(*) FROM chunks;"
 ```
 
+## Phase 5 — Embeddings
+
+Generates a vector embedding for every chunk and stores it via
+`pgvector`, enabling similarity search — "find chunks whose meaning is
+closest to this question," not just keyword matching.
+
+Uses [`fastembed`](https://github.com/qdrant/fastembed) to run
+`bge-small-en-v1.5` through ONNX Runtime rather than the more common
+`sentence-transformers` + PyTorch route — same model, same 384-dimension
+output, but a much lighter install (no PyTorch download/setup needed).
+
+```bash
+python embed_and_load.py
+```
+
+First run downloads the ONNX model files (~130MB, one-time, cached
+afterward). Only embeds chunks that don't already have one, so it's
+safe to re-run after adding more drugs later. Builds the `pgvector`
+similarity index (`ivfflat`) at the end, once real embeddings exist to
+index — building it earlier would produce a low-quality index, since
+`ivfflat` clusters based on a sample of whatever data exists at
+creation time.
+
+Verify:
+```bash
+docker exec -it medical-rag-db psql -U raguser -d medical_rag -c "SELECT COUNT(*) FROM chunks WHERE embedding IS NOT NULL;"
+```
+
 ## Design notes
 
 - **Why the API instead of the bulk zip downloads?** DailyMed's full
@@ -228,3 +257,16 @@ docker exec -it medical-rag-db psql -U raguser -d medical_rag -c "SELECT COUNT(*
   only need tokenization in Phase 4, not the actual embedding model
   yet (that's Phase 5) — `tokenizers` avoids pulling in `transformers`
   and eventually `torch` before they're actually needed.
+- **Why `fastembed` instead of `sentence-transformers`?** Both can run
+  `bge-small` and produce identical-shape output, but
+  `sentence-transformers` depends on PyTorch (100+ MB, GPU/CPU
+  detection overhead). `fastembed` runs the same model through ONNX
+  Runtime — much lighter, and CPU inference is all a laptop-scale
+  project like this needs.
+- **Why build the `ivfflat` similarity index in the embedding script
+  instead of `schema.sql`?** `ivfflat` clusters its index based on
+  whatever data exists at the moment `CREATE INDEX` runs. Since
+  `schema.sql` runs early (Phase 3, before chunks or embeddings
+  exist), building the index there would index effectively nothing —
+  Postgres itself warns about this. Building it after real embeddings
+  exist gives a meaningfully better index.

@@ -1,3 +1,4 @@
 requests==2.32.3
 pg8000==1.31.5
 tokenizers==0.23.1
+fastembed==0.8.0

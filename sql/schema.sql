@@ -96,3 +96,18 @@ CREATE TABLE IF NOT EXISTS chunks (
 
 CREATE INDEX IF NOT EXISTS idx_chunks_section_id ON chunks(section_id);
 CREATE INDEX IF NOT EXISTS idx_chunks_drug_id ON chunks(drug_id);
+
+-- Phase 5 — embedding column, added via ALTER rather than rebuilding
+-- the table from scratch. bge-small-en-v1.5 produces 384-dimension
+-- vectors, so that's a fixed part of the column type — a different
+-- embedding model with a different output size would need a new
+-- column (or a new table), not just a data change.
+ALTER TABLE chunks ADD COLUMN IF NOT EXISTS embedding vector(384);
+
+-- Note: the similarity-search index (ivfflat) is intentionally NOT
+-- created here. ivfflat builds its clusters from a sample of the
+-- data that exists at CREATE INDEX time — building it now, before any
+-- real embeddings exist, would produce a low-quality index (Postgres
+-- even warns about this: "ivfflat index created with little data").
+-- src/embed_and_load.py creates this index itself, after all real
+-- embeddings have been inserted.
