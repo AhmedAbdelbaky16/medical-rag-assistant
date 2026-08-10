@@ -25,7 +25,7 @@ cd medical-rag-assistant
 - [x] Phase 4 — Tokenization & chunking
 - [x] Phase 5 — Embeddings
 - [x] Phase 6 — Hybrid retrieval
-- [ ] Phase 7 — Generation
+- [x] Phase 7 — Generation
 - [ ] Phase 8 — Backend API
 - [ ] Phase 9 — Frontend
 - [ ] Phase 10 — Docker Compose
@@ -78,7 +78,9 @@ rag-medical-assistant/
 │   ├── embed_and_load.py   # Phase 5: generate + store embeddings via pgvector
 │   ├── retrieval.py        # Phase 6: drug detection + hybrid (SQL + vector) search
 │   ├── test_search.py      # manual test: pure vector search
-│   └── compare_search.py   # Phase 6: pure vector vs. hybrid search, side by side
+│   ├── compare_search.py   # Phase 6: pure vector vs. hybrid search, side by side
+│   ├── generate.py         # Phase 7: context building, prompting, faithfulness check
+│   └── ask.py               # Phase 7: end-to-end CLI — question in, cited answer out
 ├── notebooks/            # scratch/exploration (not part of the pipeline)
 ├── docker-compose.yml
 ├── requirements.txt
@@ -235,6 +237,46 @@ question, once correctly filtered to the right drug. Addressing this
 would mean adding a reranker or tuning based on evaluation results —
 tracked for Phase 11/12, not solved here.
 
+## Phase 7 — Generation
+
+Turns retrieved chunks into an actual answer, grounded in that
+context, with citations back to specific sources — instead of handing
+the person a list of raw chunks to read themselves.
+
+Runs locally via [Ollama](https://ollama.com/), no API key or cost.
+Generation uses `qwen2.5:7b`; requires Ollama running
+(`ollama serve`, or the desktop app) with that model pulled.
+
+```bash
+python ask.py "what is the max daily dose of ibuprofen?"
+```
+
+Two model calls happen per question:
+1. **Generation** — answers using only the provided context, returns
+   structured JSON (`answer`, `cited_sources`, `sufficient_context`),
+   parsed defensively since local models occasionally produce
+   malformed JSON even when asked not to.
+2. **Faithfulness check** — a second call asking "is this answer
+   actually supported by the sources?", to catch hallucination before
+   the person sees it.
+
+**A real finding worth keeping:** the faithfulness check originally
+used a much smaller/faster model (`qwen2:0.5b`) on the assumption that
+judging support is simpler than generating an answer. Testing showed
+otherwise — the 0.5b model misread its own source text (turning
+"4 to 6 hours" into a garbled "two-fourths hours" in its explanation)
+and incorrectly flagged a genuinely correct, well-cited answer as
+unsupported. Switched to using the same capable model for both steps.
+Faithfulness checking is its own reasoning task, not a rubber stamp —
+an underpowered model can fail at it even when the actual answer is
+fine.
+
+Context sent to the model is capped at ~1500 words, keeping the
+highest-relevance sources and dropping lower-ranked ones if the full
+set would exceed that — approximated by word count rather than exact
+tokenization, since the exact qwen tokenizer isn't needed for a rough
+budget check.
+
 ## Design notes
 
 - **Why the API instead of the bulk zip downloads?** DailyMed's full
@@ -315,3 +357,19 @@ tracked for Phase 11/12, not solved here.
   "insulin" matching before the more specific "insulin glargine" —
   not currently a conflict in this drug list, but a real failure mode
   worth guarding against generally).
+- **Why Ollama instead of a hosted API (Claude, OpenAI)?** Free, fully
+  local, no API key or per-request cost — a deliberate choice for this
+  project, and it demonstrates working with self-hosted inference
+  rather than just wrapping someone else's API.
+- **Why a second "faithfulness check" model call instead of trusting
+  the generation model's own citations?** A model can cite a source
+  and still say something that source doesn't actually support —
+  citing isn't the same as being correct. A separate pass, asking
+  specifically "is this supported?", catches that category of error
+  the first call wouldn't self-report.
+- **Why word-count budgeting instead of exact token counting for the
+  generation context?** The generation model (qwen) has a different
+  tokenizer than the embedding model, and loading a second exact
+  tokenizer just for a rough context-size guardrail wasn't worth the
+  added complexity — word count is a close enough proxy for this
+  purpose.

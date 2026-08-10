@@ -25,6 +25,13 @@ CHUNK_TARGET_TOKENS = 300
 CHUNK_MAX_TOKENS = 400
 CHUNK_OVERLAP_TOKENS = 50
 
+# --- Generation (Phase 7) --------------------------------------------------
+# Ollama must be running locally (ollama serve, or the desktop app) with
+# this model already pulled. qwen2:0.5b is much faster for quick testing
+# while building the pipeline; swap to qwen2.5:7b for real answer quality.
+OLLAMA_BASE_URL = "http://localhost:11434"
+GENERATION_MODEL = "qwen2.5:7b"
+
 # --- Database --------------------------------------------------------
 # These match docker-compose.yml. Local dev only — fine to keep as
 # plain values for now since this only ever runs against your own
