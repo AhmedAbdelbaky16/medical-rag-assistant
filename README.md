@@ -24,7 +24,7 @@ cd medical-rag-assistant
 - [x] Phase 3 — SQL schema & structured data
 - [x] Phase 4 — Tokenization & chunking
 - [x] Phase 5 — Embeddings
-- [ ] Phase 6 — Hybrid retrieval
+- [x] Phase 6 — Hybrid retrieval
 - [ ] Phase 7 — Generation
 - [ ] Phase 8 — Backend API
 - [ ] Phase 9 — Frontend
@@ -75,7 +75,10 @@ rag-medical-assistant/
 │   ├── load_to_db.py       # Phase 3: apply schema + load JSON into Postgres
 │   ├── chunking.py         # Phase 4: core chunking algorithm (unit-testable)
 │   ├── chunk_and_load.py   # Phase 4: tokenize + chunk all sections, write to DB
-│   └── embed_and_load.py   # Phase 5: generate + store embeddings via pgvector
+│   ├── embed_and_load.py   # Phase 5: generate + store embeddings via pgvector
+│   ├── retrieval.py        # Phase 6: drug detection + hybrid (SQL + vector) search
+│   ├── test_search.py      # manual test: pure vector search
+│   └── compare_search.py   # Phase 6: pure vector vs. hybrid search, side by side
 ├── notebooks/            # scratch/exploration (not part of the pipeline)
 ├── docker-compose.yml
 ├── requirements.txt
@@ -202,6 +205,36 @@ Verify:
 docker exec -it medical-rag-db psql -U raguser -d medical_rag -c "SELECT COUNT(*) FROM chunks WHERE embedding IS NOT NULL;"
 ```
 
+## Phase 6 — Hybrid retrieval
+
+**The problem, found for real during Phase 5 testing:** pure vector
+search across all 40 drugs can rank an unrelated drug's chunk above
+the actually-relevant one, if it happens to mention the right word in
+passing — e.g. asking about ibuprofen's max dose pulled back
+Metformin's drug-interaction table, because that table mentions
+"ibuprofen" in a comparison, and Naproxen (a different NSAID)
+outranked Ibuprofen entirely.
+
+**The fix:** if the question names a known drug, filter to that
+drug's chunks with SQL *before* ranking by vector distance — vector
+search then only has to compete within the right drug's own content,
+instead of across everything.
+
+```bash
+python compare_search.py "what is the max daily dose of ibuprofen?"
+```
+prints pure vector search and hybrid search results side by side, so
+the fix is directly visible.
+
+**Known limitation (intentionally not fixed here):** hybrid retrieval
+only fixes *which drug* gets searched — it doesn't fix *which section
+within that drug* ranks best, which is still plain vector similarity
+and is imperfect. In testing, an "Active ingredient" listing
+outranked the actual "Directions" (dosage) section for a dosage
+question, once correctly filtered to the right drug. Addressing this
+would mean adding a reranker or tuning based on evaluation results —
+tracked for Phase 11/12, not solved here.
+
 ## Design notes
 
 - **Why the API instead of the bulk zip downloads?** DailyMed's full
@@ -270,3 +303,15 @@ docker exec -it medical-rag-db psql -U raguser -d medical_rag -c "SELECT COUNT(*
   exist), building the index there would index effectively nothing —
   Postgres itself warns about this. Building it after real embeddings
   exist gives a meaningfully better index.
+- **Why detect the drug by checking known names against the question
+  text, instead of something more sophisticated (NER model, LLM
+  extraction)?** The full drug list is small and already known ahead
+  of time (it's `config.DRUG_LIST`) — simple substring matching is
+  reliable, fast, needs no extra model, and is easy to debug when it
+  gets something wrong. A more general system with an open-ended set
+  of entities would need a different approach.
+- **Why check longest drug names first?** To avoid a shorter name
+  matching inside a longer one accidentally (e.g. a hypothetical
+  "insulin" matching before the more specific "insulin glargine" —
+  not currently a conflict in this drug list, but a real failure mode
+  worth guarding against generally).
