@@ -26,7 +26,7 @@ cd medical-rag-assistant
 - [x] Phase 5 — Embeddings
 - [x] Phase 6 — Hybrid retrieval
 - [x] Phase 7 — Generation
-- [ ] Phase 8 — Backend API
+- [x] Phase 8 — Backend API
 - [ ] Phase 9 — Frontend
 - [ ] Phase 10 — Docker Compose
 - [ ] Phase 11 — Evaluation
@@ -80,7 +80,8 @@ rag-medical-assistant/
 │   ├── test_search.py      # manual test: pure vector search
 │   ├── compare_search.py   # Phase 6: pure vector vs. hybrid search, side by side
 │   ├── generate.py         # Phase 7: context building, prompting, faithfulness check
-│   └── ask.py               # Phase 7: end-to-end CLI — question in, cited answer out
+│   ├── ask.py               # Phase 7: end-to-end CLI — question in, cited answer out
+│   └── api.py                # Phase 8: FastAPI backend — same pipeline, over HTTP
 ├── notebooks/            # scratch/exploration (not part of the pipeline)
 ├── docker-compose.yml
 ├── requirements.txt
@@ -277,6 +278,29 @@ set would exceed that — approximated by word count rather than exact
 tokenization, since the exact qwen tokenizer isn't needed for a rough
 budget check.
 
+## Phase 8 — Backend API
+
+Wraps the same pipeline (Phases 5-7) as a real HTTP service via
+FastAPI, instead of a CLI script — the difference between "a pipeline
+I run in a terminal" and "an application."
+
+```bash
+python -m uvicorn api:app --reload
+```
+(Use `python -m uvicorn` rather than the bare `uvicorn` command if
+Windows can't find it on PATH — pip sometimes installs scripts to a
+folder that isn't there by default.)
+
+Endpoints:
+- `POST /ask` — the real endpoint. Body: `{"question": "...", "top_k": 5, "check_faithfulness": true}`
+- `GET /health` — checks DB connectivity and reports how many chunks have embeddings
+- `GET /docs` — interactive API docs (auto-generated from the Pydantic models), can run real requests from the browser
+
+The embedding model loads once at startup, not per-request — reloading
+it every time would be slow and pointless since it never changes.
+Ollama being unreachable (e.g. forgot to run `ollama serve`) returns a
+clean `503` with a clear message, not a raw stack trace.
+
 ## Design notes
 
 - **Why the API instead of the bulk zip downloads?** DailyMed's full
@@ -373,3 +397,10 @@ budget check.
   tokenizer just for a rough context-size guardrail wasn't worth the
   added complexity — word count is a close enough proxy for this
   purpose.
+- **Why load the embedding model once at startup instead of per-request?**
+  It never changes between questions, so reloading it every request
+  would just be wasted latency for no benefit.
+- **Why a new database connection per request instead of a connection
+  pool?** Simple and matches every other script in this project. Fine
+  at this project's scale (a portfolio demo, not real concurrent
+  traffic) — a production API would use a connection pool instead.
