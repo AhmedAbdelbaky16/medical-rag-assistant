@@ -27,8 +27,8 @@ cd medical-rag-assistant
 - [x] Phase 6 — Hybrid retrieval
 - [x] Phase 7 — Generation
 - [x] Phase 8 — Backend API
-- [ ] Phase 9 — Frontend
-- [ ] Phase 10 — Docker Compose
+- [x] Phase 9 — Frontend
+- [ ] Phase 10 — Docker Compose (full stack)
 - [ ] Phase 11 — Evaluation
 - [ ] Phase 12 — Fine-tuning (optional)
 - [ ] Phase 13 — Packaging & deploy
@@ -36,28 +36,29 @@ cd medical-rag-assistant
 ## Phase 0/1 — Setup instructions (run these on your own machine)
 
 This project calls the public DailyMed API, which isn't reachable from
-the sandbox this was built in — so run these steps locally:
+a sandboxed dev environment — run these steps locally:
 
 ```bash
 # 1. Create and activate a virtual environment
-python3 -m venv venv
-source venv/bin/activate      # Windows: venv\Scripts\activate
+python -m venv venv
+venv\Scripts\activate          # Windows
+source venv/bin/activate       # Mac/Linux
 
 # 2. Install dependencies
 pip install -r requirements.txt
 
 # 3. Download the drug labels (~40 drugs, a few MB total)
 cd src
-python3 download_labels.py
+python download_labels.py
 
 # 4. Parse and clean them into structured JSON
-python3 parse_labels.py
+python parse_labels.py
 ```
 
-After step 3, check `data/raw/` — you should see one `.xml` file per
-drug. After step 4, check `data/processed/` — one clean `.json` file
-per drug, each broken into labeled sections
-(e.g. `WARNINGS`, `DOSAGE AND ADMINISTRATION`).
+After step 3, check `data/raw/` — one `.xml` file per drug. After step
+4, check `data/processed/` — one clean `.json` file per drug, each
+broken into labeled sections (e.g. `WARNINGS`, `DOSAGE AND
+ADMINISTRATION`).
 
 ## Project structure
 
@@ -69,7 +70,7 @@ rag-medical-assistant/
 ├── sql/
 │   └── schema.sql        # drugs + sections + chunks table definitions
 ├── src/
-│   ├── config.py           # paths, drug list, API config, DB config, chunking config
+│   ├── config.py           # paths, drug list, API/DB/chunking/generation/frontend config
 │   ├── download_labels.py  # Phase 1a: pull labels from DailyMed
 │   ├── parse_labels.py     # Phase 1b: clean + section-parse XML
 │   ├── load_to_db.py       # Phase 3: apply schema + load JSON into Postgres
@@ -81,7 +82,8 @@ rag-medical-assistant/
 │   ├── compare_search.py   # Phase 6: pure vector vs. hybrid search, side by side
 │   ├── generate.py         # Phase 7: context building, prompting, faithfulness check
 │   ├── ask.py               # Phase 7: end-to-end CLI — question in, cited answer out
-│   └── api.py                # Phase 8: FastAPI backend — same pipeline, over HTTP
+│   ├── api.py                # Phase 8: FastAPI backend — same pipeline, over HTTP
+│   └── frontend.py            # Phase 9: Streamlit chat UI, calls the API over HTTP
 ├── notebooks/            # scratch/exploration (not part of the pipeline)
 ├── docker-compose.yml
 ├── requirements.txt
@@ -118,8 +120,8 @@ slate.)
 
 ## Phase 3 — SQL schema & structured data
 
-Two tables: `drugs` (one row per drug) and `sections` (one row per
-label section, linked to its drug via a foreign key). See
+Two core tables: `drugs` (one row per drug) and `sections` (one row
+per label section, linked to its drug via a foreign key). See
 `sql/schema.sql` for the full definitions and inline comments
 explaining each design choice.
 
@@ -301,6 +303,23 @@ it every time would be slow and pointless since it never changes.
 Ollama being unreachable (e.g. forgot to run `ollama serve`) returns a
 clean `503` with a clear message, not a raw stack trace.
 
+## Phase 9 — Frontend
+
+A Streamlit chat interface, calling the FastAPI backend (Phase 8) over
+plain HTTP — same as any other client would — rather than importing
+the pipeline directly. Keeps frontend and backend genuinely decoupled.
+
+```bash
+python -m streamlit run frontend.py
+```
+(Use `python -m streamlit` rather than the bare `streamlit` command if
+Windows can't find it on PATH, same issue as `uvicorn` in Phase 8.)
+
+Requires Postgres, the API, and Ollama all running. Shows the answer,
+a faithfulness badge, and an expandable source list with cited/not-
+cited markers and distance scores — so the reasoning behind an answer
+is visible, not just the final text.
+
 ## Design notes
 
 - **Why the API instead of the bulk zip downloads?** DailyMed's full
@@ -309,10 +328,9 @@ clean `503` with a clear message, not a raw stack trace.
   the API keeps the dataset small, relevant, and reproducible.
 - **Why parse by `<section>` instead of treating the label as one blob?**
   SPL XML already tags content by section (INDICATIONS, WARNINGS,
-  DOSAGE, etc.). Preserving that structure now means Phase 3 (SQL) and
-  Phase 4 (chunking) can filter and chunk by section — this is what
-  makes hybrid retrieval possible later instead of bolting it on
-  afterward.
+  DOSAGE, etc.). Preserving that structure now means later phases can
+  filter and chunk by section — this is what makes hybrid retrieval
+  possible later instead of bolting it on afterward.
 - **Empty sections are dropped**, not stored — no point embedding or
   indexing sections with no content.
 - **Why `pgvector/pgvector` instead of separate SQL + vector databases?**
@@ -328,11 +346,10 @@ clean `503` with a clear message, not a raw stack trace.
   sections — wasted storage, and a typo fix would need updating many
   rows instead of one. Splitting into a one-to-many relationship
   (drug → many sections) linked by a foreign key avoids that.
-- **Why `pg8000` instead of `psycopg2`?** Same Python 3.14 wheel-build
-  issue as `lxml` in Phase 1 — `psycopg2-binary` has no prebuilt wheel
-  yet for this Python version and needs a C compiler to build from
-  source. `pg8000` is a pure-Python driver, so it installs instantly
-  with no extra tooling.
+- **Why `pg8000` instead of `psycopg2`?** `psycopg2-binary` has no
+  prebuilt wheel for newer Python versions and needs a C compiler to
+  build from source. `pg8000` is a pure-Python driver, so it installs
+  instantly with no extra tooling.
 - **Why does `load_to_db.py` delete + reinsert a drug's sections on
   every run, instead of diffing?** Sections are fully derived from the
   JSON with no user edits to preserve, so a full replace is simpler
@@ -353,9 +370,9 @@ clean `503` with a clear message, not a raw stack trace.
   without its antecedent. Carrying the last portion of one chunk into
   the start of the next preserves that continuity.
 - **Why `tokenizers` instead of the full `transformers` library?** We
-  only need tokenization in Phase 4, not the actual embedding model
-  yet (that's Phase 5) — `tokenizers` avoids pulling in `transformers`
-  and eventually `torch` before they're actually needed.
+  only need tokenization for chunking, not the actual embedding model
+  itself — `tokenizers` avoids pulling in `transformers` and
+  eventually `torch` before they're actually needed.
 - **Why `fastembed` instead of `sentence-transformers`?** Both can run
   `bge-small` and produce identical-shape output, but
   `sentence-transformers` depends on PyTorch (100+ MB, GPU/CPU
@@ -404,3 +421,9 @@ clean `503` with a clear message, not a raw stack trace.
   pool?** Simple and matches every other script in this project. Fine
   at this project's scale (a portfolio demo, not real concurrent
   traffic) — a production API would use a connection pool instead.
+- **Why Streamlit calling the API over HTTP, instead of importing the
+  pipeline functions directly into the frontend?** Keeps the two
+  genuinely decoupled — the frontend has no idea how answers get
+  generated, it just calls an endpoint. This also means the same
+  backend could serve other clients (a mobile app, another UI) without
+  any changes.
