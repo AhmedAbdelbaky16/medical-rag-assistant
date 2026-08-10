@@ -28,7 +28,7 @@ cd medical-rag-assistant
 - [x] Phase 7 — Generation
 - [x] Phase 8 — Backend API
 - [x] Phase 9 — Frontend
-- [ ] Phase 10 — Docker Compose (full stack)
+- [x] Phase 10 — Docker Compose (full stack)
 - [ ] Phase 11 — Evaluation
 - [ ] Phase 12 — Fine-tuning (optional)
 - [ ] Phase 13 — Packaging & deploy
@@ -86,6 +86,8 @@ rag-medical-assistant/
 │   └── frontend.py            # Phase 9: Streamlit chat UI, calls the API over HTTP
 ├── notebooks/            # scratch/exploration (not part of the pipeline)
 ├── docker-compose.yml
+├── Dockerfile              # Phase 10: image used for both api and frontend services
+├── .dockerignore
 ├── requirements.txt
 └── README.md
 ```
@@ -320,6 +322,48 @@ a faithfulness badge, and an expandable source list with cited/not-
 cited markers and distance scores — so the reasoning behind an answer
 is visible, not just the final text.
 
+## Phase 10 — Docker Compose (full stack)
+
+Bundles Postgres, the API, and the frontend into one command instead
+of three separate terminals:
+
+```bash
+docker compose up -d --build
+```
+
+Then open **http://localhost:8501** for the chat UI, or
+**http://localhost:8000/docs** for the API directly.
+
+Ollama stays **outside** Docker, running normally on your host machine
+— containerizing it would add GPU/model-management complexity this
+project doesn't need, and it's already working fine as-is. The `api`
+container reaches it via `host.docker.internal`, Docker's built-in DNS
+name for "the machine running Docker" (works out of the box with
+Docker Desktop on Windows/Mac).
+
+**What changed to make this work:** `config.py`'s database, Ollama,
+and API URLs are now read from environment variables, falling back to
+the original `localhost` values when none are set — so running the
+scripts directly (`python ask.py`, etc.) still works exactly as
+before, unchanged. Inside Docker, `docker-compose.yml` sets:
+- `DB_HOST=db` for the api service (Postgres's service name, not `localhost`)
+- `OLLAMA_BASE_URL=http://host.docker.internal:11434` for the api service
+- `API_BASE_URL=http://api:8000` for the frontend service (the api service's name)
+
+The `db` service also gained a real health check (`pg_isready`)
+instead of relying on `depends_on`'s default behavior, which only
+waits for a container to *start*, not for Postgres to actually be
+ready to accept connections — a race condition that works most of the
+time locally and then fails unpredictably. `api` now waits for `db`
+to report genuinely healthy before starting.
+
+**Note:** the `api`/`frontend` containers only run the *serving*
+layer (Phases 5-9's API and UI) — the one-time data pipeline scripts
+(download, parse, chunk, embed) still run directly on your machine
+against the same Postgres container, exactly as in every earlier
+phase. The existing data survives this change untouched, since the
+Postgres volume name didn't change.
+
 ## Design notes
 
 - **Why the API instead of the bulk zip downloads?** DailyMed's full
@@ -427,3 +471,28 @@ is visible, not just the final text.
   generated, it just calls an endpoint. This also means the same
   backend could serve other clients (a mobile app, another UI) without
   any changes.
+- **Why does Ollama stay outside Docker while everything else gets
+  containerized?** It's already installed and working directly on the
+  host machine — containerizing it would mean solving GPU/model
+  volume-mounting problems for no real benefit at this project's
+  scale. `host.docker.internal` lets the containerized API reach it
+  without needing to move it.
+- **Why one shared Dockerfile/image for both `api` and `frontend`
+  instead of two separate ones?** Same dependencies either way — a
+  single image kept simple and easy to reason about was prioritized
+  over a marginally smaller frontend image. A larger project serving
+  real traffic might split them to reduce image size and attack
+  surface per service.
+- **Why add a real health check (`pg_isready`) instead of relying on
+  `depends_on`?** Plain `depends_on` only waits for a container to
+  *start*, not for Postgres to actually be ready to accept
+  connections — a race condition that can work locally most of the
+  time and then fail unpredictably. A real readiness check removes
+  the guesswork.
+- **Why environment-variable config with `localhost` fallbacks,
+  instead of hardcoding Docker-specific values?** Running the pipeline
+  scripts directly (outside Docker) is still the normal workflow for
+  data ingestion/chunking/embedding — those never run inside a
+  container. Env vars let the exact same `config.py` serve both
+  contexts correctly, rather than needing a separate config file per
+  environment.
