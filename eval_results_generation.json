@@ -1,0 +1,236 @@
+{
+  "aggregate": {
+    "num_questions": 25,
+    "faithfulness_pass_rate": 0.96,
+    "faithfulness_scored_count": 25,
+    "parse_errors": 0,
+    "no_results": 0
+  },
+  "per_question": [
+    {
+      "question": "what is the max daily dose of ibuprofen?",
+      "answer": "The maximum daily dose of ibuprofen, as per the sources provided, is 6 tablets in 24 hours, unless directed by a doctor.",
+      "sufficient_context": true,
+      "faithfulness_supported": true,
+      "faithfulness_explanation": "The answer directly corresponds to the information given in Source 5.",
+      "parse_error": false,
+      "no_results": false
+    },
+    {
+      "question": "how much metformin should I take?",
+      "answer": "The recommended starting dosage is 500 mg orally once daily with the evening meal. The dose can be increased in increments of 500 mg weekly based on glycemic control and tolerability, up to a maximum of 2,000 mg once daily. If this does not achieve the desired effect, you may consider a trial of metformin hydrochloride extended-release tablets 1,000 mg twice daily.",
+      "sufficient_context": true,
+      "faithfulness_supported": true,
+      "faithfulness_explanation": "The information is directly supported by Source 1.",
+      "parse_error": false,
+      "no_results": false
+    },
+    {
+      "question": "what is the recommended dose of amoxicillin?",
+      "answer": "The recommended dose of amoxicillin varies depending on the condition being treated and the patient's age. For infections caused by Streptococcus pyogenes, it is 30 mg/kg/day divided every 12 hours for pediatric patients under 12 weeks (approximately 3 months old). For H. pylori infection in adults, triple therapy involves a dose of 1 gram amoxicillin twice daily or dual therapy involving 1 gram amoxicillin three times daily.",
+      "sufficient_context": true,
+      "faithfulness_supported": true,
+      "faithfulness_explanation": "The sources provide detailed dosing information for both pediatric and adult patients, supporting the claim about the different recommended doses for Streptococcus pyogenes infections in young infants and H. pylori infection in adults.",
+      "parse_error": false,
+      "no_results": false
+    },
+    {
+      "question": "how often should I take sertraline?",
+      "answer": "Sertraline can be administered either continuously (every day throughout the menstrual cycle) or intermittently (only during the luteal phase of the menstrual cycle, starting 14 days prior to the anticipated onset of menstruation and continuing through the onset of menses).",
+      "sufficient_context": true,
+      "faithfulness_supported": true,
+      "faithfulness_explanation": "The sources provide details on both continuous and intermittent dosing for sertraline hydrochloride in adult women with PMDD.",
+      "parse_error": false,
+      "no_results": false
+    },
+    {
+      "question": "what is the starting dose of lisinopril?",
+      "answer": "The recommended starting dose for lisinopril when used with diuretics and (usually) digitalis as adjunctive therapy for systolic heart failure is 5 mg once daily. In patients with hyponatremia (serum sodium < 130 mEq/L), the recommended starting dose is 2.5 mg once daily.",
+      "sufficient_context": true,
+      "faithfulness_supported": true,
+      "faithfulness_explanation": "The information is directly supported by Source 1.",
+      "parse_error": false,
+      "no_results": false
+    },
+    {
+      "question": "how much acetaminophen is safe to take?",
+      "answer": "The information provided does not contain specific guidance for the recommended dosage of acetaminophen.",
+      "sufficient_context": false,
+      "faithfulness_supported": true,
+      "faithfulness_explanation": "The sources do not include any information about acetaminophen dosages.",
+      "parse_error": false,
+      "no_results": false
+    },
+    {
+      "question": "who should not take metformin?",
+      "answer": "People with severe kidney problems, a history of diabetic ketoacidosis, or liver issues should not take metformin hydrochloride extended-release tablets. Additionally, those over 80 years old without normal kidney function testing should also avoid taking this medication.",
+      "sufficient_context": true,
+      "faithfulness_supported": true,
+      "faithfulness_explanation": "The sources clearly state the contraindications for metformin hydrochloride extended-release tablets, including severe renal impairment, a history of diabetic ketoacidosis, liver problems, and for people over 80 with untested kidney function.",
+      "parse_error": false,
+      "no_results": false
+    },
+    {
+      "question": "who should not use ibuprofen?",
+      "answer": "People who are pregnant or breast-feeding, taking aspirin for heart attack or stroke prevention, under a doctor's care for any serious condition, and those with a known allergy to aspirin should consult a health professional before using ibuprofen. Additionally, individuals with a history of heart attack, heart failure, or stroke should avoid prolonged use beyond the recommended duration.",
+      "sufficient_context": true,
+      "faithfulness_supported": true,
+      "faithfulness_explanation": "All claims are directly supported by the sources provided.",
+      "parse_error": false,
+      "no_results": false
+    },
+    {
+      "question": "is warfarin safe for everyone?",
+      "answer": "Warfarin sodium may not be suitable for everyone and has certain restrictions.",
+      "sufficient_context": true,
+      "faithfulness_supported": true,
+      "faithfulness_explanation": "",
+      "parse_error": false,
+      "no_results": false
+    },
+    {
+      "question": "what are the warnings for ibuprofen?",
+      "answer": "Ibuprofen has several warnings. It may cause severe allergic reactions in people allergic to aspirin; symptoms include hives, facial swelling, asthma (wheezing), shock, skin reddening, rash, and blisters. Stomach bleeding can occur, especially in those aged 60 or older, with a history of stomach ulcers, or while taking blood thinners or alcohol regularly. It is recommended to consult a health professional before use if you are pregnant, breast-feeding, have problems from pain relievers, serious side effects from previous medications, a history of stomach issues, high blood pressure, heart disease, liver cirrhosis, kidney disease, asthma, or had a stroke. Additionally, it should not be taken with other NSAIDs.",
+      "sufficient_context": true,
+      "faithfulness_supported": true,
+      "faithfulness_explanation": "All claims are directly supported by the provided sources.",
+      "parse_error": false,
+      "no_results": false
+    },
+    {
+      "question": "can metformin cause lactic acidosis?",
+      "answer": "Yes, metformin can cause lactic acidosis.",
+      "sufficient_context": true,
+      "faithfulness_supported": true,
+      "faithfulness_explanation": "Sources 1-5 all mention that metformin can cause lactic acidosis.",
+      "parse_error": false,
+      "no_results": false
+    },
+    {
+      "question": "what is the stomach bleeding risk with naproxen?",
+      "answer": "The stomach bleeding risk with naproxen includes bleeding, sometimes fatal, particularly in the elderly, as well as ulceration and perforation of the upper or lower gastrointestinal tract.",
+      "sufficient_context": true,
+      "faithfulness_supported": true,
+      "faithfulness_explanation": "The sources explicitly mention that naproxen can cause 'bleeding (sometimes fatal, particularly in the elderly)' and 'ulceration, bleeding, (sometimes fatal, particularly in the elderly), ulceration, perforation and obstruction of the upper or lower gastrointestinal tract'.",
+      "parse_error": false,
+      "no_results": false
+    },
+    {
+      "question": "is ibuprofen safe during pregnancy?",
+      "answer": "Ibuprofen should be used with caution during pregnancy, especially in the last three months. It is important to consult a healthcare professional before use.",
+      "sufficient_context": true,
+      "faithfulness_supported": true,
+      "faithfulness_explanation": "The sources clearly state that ibuprofen should not be used without consulting a health professional during pregnancy, particularly during the last 3 months.",
+      "parse_error": false,
+      "no_results": false
+    },
+    {
+      "question": "can I take sertraline while pregnant?",
+      "answer": "Sertraline hydrochloride tablets may cause withdrawal symptoms in the newborn or persistent pulmonary hypertension of the newborn (PPHN). Talk to your healthcare provider about the benefits and risks of taking sertraline hydrochloride tablets during pregnancy. There is a pregnancy registry for females who are exposed to sertraline hydrochloride tablets during pregnancy. The purpose of the registry is to collect information about the health of females exposed to sertraline hydrochloride tablets and their baby.",
+      "sufficient_context": true,
+      "faithfulness_supported": true,
+      "faithfulness_explanation": "The sources clearly state that taking sertraline hydrochloride during pregnancy may cause withdrawal symptoms in newborns or PPHN, and mention the existence of a pregnancy registry.",
+      "parse_error": false,
+      "no_results": false
+    },
+    {
+      "question": "is lisinopril safe during pregnancy?",
+      "answer": "Lisinopril is not considered safe during pregnancy, particularly in the second and third trimesters. Use of drugs that act on the renin-angiotensin system during these stages can reduce fetal renal function, cause oligohydramnios, and increase the risk of morbidity and mortality in the fetus and newborn.",
+      "sufficient_context": true,
+      "faithfulness_supported": true,
+      "faithfulness_explanation": "All information aligns with sources on risks associated with lisinopril use during pregnancy.",
+      "parse_error": false,
+      "no_results": false
+    },
+    {
+      "question": "what are the side effects of metformin?",
+      "answer": "The common side effects of metformin hydrochloride extended-release tablets include diarrhea, nausea, and upset stomach. These side effects generally go away after you take the medicine for a while.",
+      "sufficient_context": true,
+      "faithfulness_supported": true,
+      "faithfulness_explanation": "The sources directly state that common side effects include diarrhea, nausea, and upset stomach.",
+      "parse_error": false,
+      "no_results": false
+    },
+    {
+      "question": "what are common side effects of sertraline?",
+      "answer": "The most common side effects in adults who take sertraline hydrochloride tablets include nausea, loss of appetite, diarrhea, or indigestion, increased sweating, tremor or shaking, agitation, change in sleep habits including increased sleepiness or insomnia, sexual problems including decreased libido and ejaculation failure, feeling tired or fatigued, anxiety. The most common side effects in children and adolescents who take sertraline hydrochloride tablets include abnormal increase in muscle movement or agitation, nose bleeds, urinary incontinence, aggressive reaction, possible slowed growth rate, and weight change.",
+      "sufficient_context": true,
+      "faithfulness_supported": true,
+      "faithfulness_explanation": "Both Source 1 and Source 3 fully support the claim.",
+      "parse_error": false,
+      "no_results": false
+    },
+    {
+      "question": "what side effects does amoxicillin cause?",
+      "answer": "Amoxicillin can cause a variety of side effects, including severe cutaneous adverse reactions (SCAR) such as Stevens-Johnson syndrome (SJS), toxic epidermal necrolysis (TEN), drug reaction with eosinophilia and systemic symptoms (DRESS), and acute generalized exanthematous pustulosis (AGEP). Skin rashes, pruritus, urticaria, erythema multiforme, and in rare cases, anaphylactic/anaphylactoid reactions, angioedema, serum sickness-like reactions, and hypersensitivity vasculitis can also occur. Gastrointestinal issues like diarrhea, vomiting, and nausea are common, as well as less frequently reported side effects such as hemorrhagic/pseudomembranous colitis. Additionally, amoxicillin may affect the efficacy of oral contraceptives due to changes in intestinal flora.",
+      "sufficient_context": true,
+      "faithfulness_supported": true,
+      "faithfulness_explanation": "The answer is fully supported by the sources provided.",
+      "parse_error": false,
+      "no_results": false
+    },
+    {
+      "question": "what are the side effects of lisinopril?",
+      "answer": "Side effects of lisinopril include headache (3.8%), dizziness (3.5%), cough (2.5%), hypotension (3.8%), chest pain (2.1%), and renal dysfunction in patients with acute myocardial infarction (2.4% versus 1.1% in placebo). Additionally, there can be small decreases in hemoglobin and hematocrit levels, which are usually not clinically significant.",
+      "sufficient_context": true,
+      "faithfulness_supported": true,
+      "faithfulness_explanation": "All side effects mentioned are directly supported by the sources.",
+      "parse_error": false,
+      "no_results": false
+    },
+    {
+      "question": "does metformin interact with other drugs?",
+      "answer": "Yes, metformin interacts with several drugs which can increase the risk for lactic acidosis. These include carbonic anhydrase inhibitors like topiramate and zonisamide, drugs that reduce metformin clearance such as ranolazine and dolutegravir, and alcohol.",
+      "sufficient_context": true,
+      "faithfulness_supported": true,
+      "faithfulness_explanation": "",
+      "parse_error": false,
+      "no_results": false
+    },
+    {
+      "question": "what drugs interact with warfarin?",
+      "answer": "Warfarin sodium may interact with a variety of drugs, both prescription and non-prescription, through pharmacodynamic or pharmacokinetic mechanisms. These include enzyme induction, enzyme inhibition, competitive antagonism (such as vitamin K), and alteration of the physiologic control loop for vitamin K metabolism. Some drugs may also have synergistic effects or reduce plasma protein binding. The most frequent interactions occur with other anticoagulants, antiplatelet agents, nonsteroidal anti-inflammatory drugs (NSAIDs), and botanicals/herbal products. Patients should inform their healthcare provider about all medications they are taking to ensure proper monitoring.",
+      "sufficient_context": true,
+      "faithfulness_supported": true,
+      "faithfulness_explanation": "The answer accurately summarizes the sources on drug interactions with warfarin sodium, including pharmacodynamic and pharmacokinetic mechanisms.",
+      "parse_error": false,
+      "no_results": false
+    },
+    {
+      "question": "what happens if I take too much metformin?",
+      "answer": "If you take too much metformin, call your healthcare provider, local Poison Control Center, or go to the nearest hospital emergency room right away. Overdose of metformin hydrochloride has occurred, including ingestion of amounts greater than 50 grams. Hypoglycemia was reported in approximately 10% of cases, but no causal association with metformin has been established. Lactic acidosis has been reported in approximately 32% of metformin overdose cases.",
+      "sufficient_context": true,
+      "faithfulness_supported": true,
+      "faithfulness_explanation": "The sources clearly state that overdosing on metformin should be immediately addressed by contacting a healthcare provider or emergency services and provide information about both human experiences with hypoglycemia and lactic acidosis following metformin overdose.",
+      "parse_error": false,
+      "no_results": false
+    },
+    {
+      "question": "what should I do if I take too much acetaminophen?",
+      "answer": "If you have taken too much acetaminophen, you should stop using the product immediately and seek medical help right away.",
+      "sufficient_context": false,
+      "faithfulness_supported": false,
+      "faithfulness_explanation": "The sources do not provide any information about acetaminophen or its overdose.",
+      "parse_error": false,
+      "no_results": false
+    },
+    {
+      "question": "what should I do if I miss a dose of ciprofloxacin?",
+      "answer": "If you miss a dose of ciprofloxacin tablets and it is 6 hours or more until your next scheduled dose, take your missed dose right away. Then take the next dose at your regular time. If less than 6 hours remain before the next dose, do not take the missed dose and continue with your next regularly scheduled dose.",
+      "sufficient_context": true,
+      "faithfulness_supported": true,
+      "faithfulness_explanation": "The answer is directly supported by the sources, which state 'If you miss a dose of ciprofloxacin tablets and it is: 6 hours or more until your next scheduled dose, take your missed dose right away. Then take the next dose at your regular time.' and 'If less than 6 hours remain before the next dose, do not take the missed dose.'",
+      "parse_error": false,
+      "no_results": false
+    },
+    {
+      "question": "how should ibuprofen be stored?",
+      "answer": "The storage information for ibuprofen is not provided in the given sources.",
+      "sufficient_context": false,
+      "faithfulness_supported": true,
+      "faithfulness_explanation": "The sources do not include any information regarding the storage of ibuprofen.",
+      "parse_error": false,
+      "no_results": false
+    }
+  ]
+}

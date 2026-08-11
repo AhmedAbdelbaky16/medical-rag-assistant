@@ -1,0 +1,236 @@
+{
+  "aggregate": {
+    "num_questions": 25,
+    "recall@1": 0.28,
+    "recall@3": 0.4,
+    "recall@5": 0.56,
+    "mrr": 0.36266666666666664
+  },
+  "per_question": [
+    {
+      "question": "what is the max daily dose of ibuprofen?",
+      "rank": 5,
+      "reciprocal_rank": 0.2,
+      "hit@1": false,
+      "hit@3": false,
+      "hit@5": true,
+      "top_result": "Ibuprofen \u2014 Active ingredient (in each tablet)"
+    },
+    {
+      "question": "how much metformin should I take?",
+      "rank": 1,
+      "reciprocal_rank": 1.0,
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "top_result": "Metformin Hydrochloride \u2014 2.2 Recommended Dosage for Metformin Hydrochloride Extended-Release Tablets in Adults and Pediatric Patients Aged 10 Years and Older with Type 2 Diabetes Mellitus"
+    },
+    {
+      "question": "what is the recommended dose of amoxicillin?",
+      "rank": 3,
+      "reciprocal_rank": 0.3333333333333333,
+      "hit@1": false,
+      "hit@3": true,
+      "hit@5": true,
+      "top_result": "Amoxicillin \u2014 12.3 Pharmacokinetics"
+    },
+    {
+      "question": "how often should I take sertraline?",
+      "rank": 1,
+      "reciprocal_rank": 1.0,
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "top_result": "Sertraline Hydrochloride \u2014 2.2 Dosage in Patients with PMDD"
+    },
+    {
+      "question": "what is the starting dose of lisinopril?",
+      "rank": null,
+      "reciprocal_rank": 0.0,
+      "hit@1": false,
+      "hit@3": false,
+      "hit@5": false,
+      "top_result": "Lisinopril \u2014 2.2 Heart Failure"
+    },
+    {
+      "question": "how much acetaminophen is safe to take?",
+      "rank": null,
+      "reciprocal_rank": 0.0,
+      "hit@1": false,
+      "hit@3": false,
+      "hit@5": false,
+      "top_result": "Escitalopram \u2014 2.5 Recommended Dosage for Specific Populations"
+    },
+    {
+      "question": "who should not take metformin?",
+      "rank": 2,
+      "reciprocal_rank": 0.5,
+      "hit@1": false,
+      "hit@3": true,
+      "hit@5": true,
+      "top_result": "Metformin Hydrochloride \u2014 SPL MEDGUIDE SECTION"
+    },
+    {
+      "question": "who should not use ibuprofen?",
+      "rank": 3,
+      "reciprocal_rank": 0.3333333333333333,
+      "hit@1": false,
+      "hit@3": true,
+      "hit@5": true,
+      "top_result": "Ibuprofen \u2014 OTC - PREGNANCY OR BREAST FEEDING SECTION"
+    },
+    {
+      "question": "is warfarin safe for everyone?",
+      "rank": null,
+      "reciprocal_rank": 0.0,
+      "hit@1": false,
+      "hit@3": false,
+      "hit@5": false,
+      "top_result": "Warfarin Sodium \u2014 MEDICATION GUIDE"
+    },
+    {
+      "question": "what are the warnings for ibuprofen?",
+      "rank": 4,
+      "reciprocal_rank": 0.25,
+      "hit@1": false,
+      "hit@3": false,
+      "hit@5": true,
+      "top_result": "Ibuprofen \u2014 Allergy alert"
+    },
+    {
+      "question": "can metformin cause lactic acidosis?",
+      "rank": 1,
+      "reciprocal_rank": 1.0,
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "top_result": "Metformin Hydrochloride \u2014 5.1 Lactic Acidosis"
+    },
+    {
+      "question": "what is the stomach bleeding risk with naproxen?",
+      "rank": null,
+      "reciprocal_rank": 0.0,
+      "hit@1": false,
+      "hit@3": false,
+      "hit@5": false,
+      "top_result": "Naproxen \u2014 6.1 Clinical Trials Experience"
+    },
+    {
+      "question": "is ibuprofen safe during pregnancy?",
+      "rank": 1,
+      "reciprocal_rank": 1.0,
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "top_result": "Ibuprofen \u2014 OTC - PREGNANCY OR BREAST FEEDING SECTION"
+    },
+    {
+      "question": "can I take sertraline while pregnant?",
+      "rank": null,
+      "reciprocal_rank": 0.0,
+      "hit@1": false,
+      "hit@3": false,
+      "hit@5": false,
+      "top_result": "Sertraline Hydrochloride \u2014 Medication Guide"
+    },
+    {
+      "question": "is lisinopril safe during pregnancy?",
+      "rank": 1,
+      "reciprocal_rank": 1.0,
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "top_result": "Lisinopril \u2014 8.1 Pregnancy"
+    },
+    {
+      "question": "what are the side effects of metformin?",
+      "rank": null,
+      "reciprocal_rank": 0.0,
+      "hit@1": false,
+      "hit@3": false,
+      "hit@5": false,
+      "top_result": "Metformin Hydrochloride \u2014 SPL MEDGUIDE SECTION"
+    },
+    {
+      "question": "what are common side effects of sertraline?",
+      "rank": 5,
+      "reciprocal_rank": 0.2,
+      "hit@1": false,
+      "hit@3": false,
+      "hit@5": true,
+      "top_result": "Sertraline Hydrochloride \u2014 Medication Guide"
+    },
+    {
+      "question": "what side effects does amoxicillin cause?",
+      "rank": 1,
+      "reciprocal_rank": 1.0,
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "top_result": "Amoxicillin \u2014 5.2 Severe Cutaneous Adverse Reactions"
+    },
+    {
+      "question": "what are the side effects of lisinopril?",
+      "rank": null,
+      "reciprocal_rank": 0.0,
+      "hit@1": false,
+      "hit@3": false,
+      "hit@5": false,
+      "top_result": "Lisinopril \u2014 6.1 Clinical Trials Experience"
+    },
+    {
+      "question": "does metformin interact with other drugs?",
+      "rank": 1,
+      "reciprocal_rank": 1.0,
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "top_result": "Metformin Hydrochloride \u2014 7 DRUG INTERACTIONS"
+    },
+    {
+      "question": "what drugs interact with warfarin?",
+      "rank": null,
+      "reciprocal_rank": 0.0,
+      "hit@1": false,
+      "hit@3": false,
+      "hit@5": false,
+      "top_result": "Warfarin Sodium \u2014 7.1 General Information"
+    },
+    {
+      "question": "what happens if I take too much metformin?",
+      "rank": null,
+      "reciprocal_rank": 0.0,
+      "hit@1": false,
+      "hit@3": false,
+      "hit@5": false,
+      "top_result": "Metformin Hydrochloride \u2014 SPL MEDGUIDE SECTION"
+    },
+    {
+      "question": "what should I do if I take too much acetaminophen?",
+      "rank": null,
+      "reciprocal_rank": 0.0,
+      "hit@1": false,
+      "hit@3": false,
+      "hit@5": false,
+      "top_result": "Dye-Free Childrens Loratadine \u2014 OTC - WHEN USING SECTION"
+    },
+    {
+      "question": "what should I do if I miss a dose of ciprofloxacin?",
+      "rank": 4,
+      "reciprocal_rank": 0.25,
+      "hit@1": false,
+      "hit@3": false,
+      "hit@5": true,
+      "top_result": "Ciprofloxacin Hydrochloride \u2014 SPL MEDGUIDE SECTION"
+    },
+    {
+      "question": "how should ibuprofen be stored?",
+      "rank": null,
+      "reciprocal_rank": 0.0,
+      "hit@1": false,
+      "hit@3": false,
+      "hit@5": false,
+      "top_result": "Ibuprofen \u2014 Active ingredient (in each tablet)"
+    }
+  ]
+}

@@ -29,7 +29,7 @@ cd medical-rag-assistant
 - [x] Phase 8 — Backend API
 - [x] Phase 9 — Frontend
 - [x] Phase 10 — Docker Compose (full stack)
-- [ ] Phase 11 — Evaluation
+- [x] Phase 11 — Evaluation
 - [ ] Phase 12 — Fine-tuning (optional)
 - [ ] Phase 13 — Packaging & deploy
 
@@ -91,6 +91,10 @@ rag-medical-assistant/
 ├── requirements.txt
 └── README.md
 ```
+
+`src/` also contains Phase 11's evaluation files:
+`eval_metrics.py` (scoring logic), `eval_set.py` (25 questions),
+`evaluate_retrieval.py`, `evaluate_generation.py` — see below.
 
 ## Phase 2 — Database setup
 
@@ -364,6 +368,59 @@ against the same Postgres container, exactly as in every earlier
 phase. The existing data survives this change untouched, since the
 Postgres volume name didn't change.
 
+## Phase 11 — Evaluation
+
+Turns the informal "this seems to work" observations from earlier
+phases into real, measured numbers, using a hand-built set of 25
+questions spanning dosage, contraindications, warnings, pregnancy,
+side effects, drug interactions, and overdose across multiple drugs.
+
+```bash
+python evaluate_retrieval.py     # fast — embedding + DB only, no LLM
+python evaluate_generation.py    # slow — 2 LLM calls per question
+```
+
+### Results (25 questions)
+
+| Metric | Score |
+|---|---|
+| Recall@1 | 0.280 |
+| Recall@3 | 0.400 |
+| Recall@5 | 0.560 |
+| MRR | 0.363 |
+| Faithfulness pass rate | 0.960 (24/25) |
+
+**Retrieval quantifies the Phase 6 limitation** we'd only seen
+anecdotally before: the correct section is the *top* result just 28%
+of the time, but appears *somewhere in the top 5* 56% of the time.
+That gap is the "hybrid retrieval fixes which drug, not which
+section" problem, now backed by numbers across 25 questions instead
+of one example.
+
+**An important distinction the eval makes visible:** faithfulness
+measures whether the answer matches what was *retrieved* — not
+whether what was retrieved was actually *correct*. A high faithfulness
+score and mediocre retrieval can coexist; they're answering different
+questions, which is why both get measured separately rather than
+collapsing into one "accuracy" number.
+
+**The one faithfulness failure, worth a closer look:** asking about an
+acetaminophen overdose, retrieval failed to find the real "Overdose"
+section (consistent with the 28% recall@1 rate). The generation model
+correctly flagged `sufficient_context: false` rather than confidently
+answering — but still added a generic "seek medical help right away"
+line that wasn't actually grounded in anything retrieved, a subtle
+violation of the "use only the provided sources" instruction. The
+faithfulness check caught it. This is arguably a *good* result: two
+independent safety layers (the model's own context-sufficiency flag,
+and the separate faithfulness pass) both worked as intended, catching
+an ungrounded claim before a person would ever see it — even though
+the root cause (a retrieval miss) wasn't prevented.
+
+Full per-question results are saved to `eval_results_retrieval.json`
+and `eval_results_generation.json` — committed to the repo as evidence
+rather than regenerated data, unlike `data/raw`/`data/processed`.
+
 ## Design notes
 
 - **Why the API instead of the bulk zip downloads?** DailyMed's full
@@ -496,3 +553,23 @@ Postgres volume name didn't change.
   container. Env vars let the exact same `config.py` serve both
   contexts correctly, rather than needing a separate config file per
   environment.
+- **Why keyword-based section matching in the eval set instead of
+  exact section titles?** Real FDA labels phrase the same kind of
+  section differently across drugs (numbered vs. unnumbered,
+  "Directions" vs. "2.2 Recommended Dosage for..."). Matching on a
+  keyword like "dosage" or "direction" finds the right section
+  regardless of a given label's exact wording, rather than requiring
+  the eval set to know every drug's specific title in advance.
+- **Why measure retrieval and generation separately instead of one
+  combined "accuracy" score?** They answer different questions — did
+  retrieval find the right chunk, and did generation stay faithful to
+  whatever it received. Collapsing them into one number would hide
+  exactly the kind of case found in testing (a faithful answer built
+  on a retrieval miss), which is the more actionable failure mode to
+  understand and fix.
+- **Why commit the eval result JSON files to the repo?** They're
+  evidence, not pipeline data — unlike `data/raw`/`data/processed`
+  (regenerable from the DailyMed API), a specific eval run's numbers
+  are themselves the artifact worth keeping, and let anyone reviewing
+  the repo see the actual measured results without rerunning
+  anything.
