@@ -7,6 +7,7 @@ around the codebase.
 """
 
 from pathlib import Path
+import os
 
 # --- Paths -------------------------------------------------------------
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -29,20 +30,34 @@ CHUNK_OVERLAP_TOKENS = 50
 # Ollama must be running locally (ollama serve, or the desktop app) with
 # this model already pulled. qwen2:0.5b is much faster for quick testing
 # while building the pipeline; swap to qwen2.5:7b for real answer quality.
-OLLAMA_BASE_URL = "http://localhost:11434"
+#
+# Phase 10: OLLAMA_BASE_URL is now overridable via env var. Running
+# locally (no Docker), it defaults to localhost as before. Running
+# inside the api container (Phase 10's docker-compose.yml), it's set
+# to http://host.docker.internal:11434 instead, since "localhost"
+# inside a container means the container itself, not your host
+# machine where Ollama actually runs.
+OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
 GENERATION_MODEL = "qwen2.5:7b"
 
+# --- Frontend (Phase 9) --------------------------------------------------
+# Where the Streamlit app finds the FastAPI backend from Phase 8.
+# Same env-var pattern as above — inside the frontend container,
+# docker-compose.yml sets this to http://api:8000 (Docker's internal
+# DNS resolves the "api" service name automatically).
+API_BASE_URL = os.environ.get("API_BASE_URL", "http://localhost:8000")
+
 # --- Database --------------------------------------------------------
-# These match docker-compose.yml. Local dev only — fine to keep as
-# plain values for now since this only ever runs against your own
-# local container. If this project ever talked to a real/shared
-# database, these would move into a .env file kept out of git instead.
+# Same env-var pattern again. Running locally, defaults match
+# docker-compose.yml's exposed port so nothing changes from before.
+# Inside the api container, DB_HOST is set to "db" (the service name)
+# since "localhost" would otherwise mean the api container itself.
 DB_CONFIG = {
-    "host": "localhost",
-    "port": 5432,
-    "dbname": "medical_rag",
-    "user": "raguser",
-    "password": "ragpassword",
+    "host": os.environ.get("DB_HOST", "localhost"),
+    "port": int(os.environ.get("DB_PORT", "5432")),
+    "dbname": os.environ.get("DB_NAME", "medical_rag"),
+    "user": os.environ.get("DB_USER", "raguser"),
+    "password": os.environ.get("DB_PASSWORD", "ragpassword"),
 }
 
 # --- Curated drug list ---------------------------------------------------

@@ -20,8 +20,8 @@ from config import DRUG_LIST, RAW_DIR, DAILYMED_BASE_URL
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 log = logging.getLogger(__name__)
 
-REQUEST_TIMEOUT = 15  # seconds
-SLEEP_BETWEEN_CALLS = 0.5  # be polite to the API
+REQUEST_TIMEOUT = 15  # seconds 
+SLEEP_BETWEEN_CALLS = 0.5  # be polite to the API 
 
 
 def search_setid(drug_name: str) -> str | None:

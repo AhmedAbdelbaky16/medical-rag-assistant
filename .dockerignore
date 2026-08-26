@@ -1,0 +1,16 @@
+# Keeps the Docker build context small and fast — none of this needs
+# to be copied into the image; the Dockerfile only COPYs src/, sql/,
+# and requirements.txt explicitly anyway, but a lean context still
+# speeds up the build itself and avoids accidentally leaking local
+# state (venv, .git) into an image layer.
+
+.git/
+.gitignore
+venv/
+__pycache__/
+*.pyc
+data/raw/*.xml
+data/processed/*.json
+notebooks/
+README.md
+*.md
