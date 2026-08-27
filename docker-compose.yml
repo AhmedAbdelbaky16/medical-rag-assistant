@@ -45,6 +45,8 @@ services:
       DB_HOST: db
       DB_PASSWORD: ${POSTGRES_PASSWORD}
       DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY}
+    volumes:
+      - ./data:/app/data
  
 
   frontend:
