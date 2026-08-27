@@ -37,8 +37,20 @@ CHUNK_OVERLAP_TOKENS = 50
 # to http://host.docker.internal:11434 instead, since "localhost"
 # inside a container means the container itself, not your host
 # machine where Ollama actually runs.
-OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
-GENERATION_MODEL = "qwen2.5:7b"
+#OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
+#GENERATION_MODEL = "qwen2.5:7b"
+
+# Phase 11: switched from local Ollama to DeepSeek's hosted API
+# (OpenAI-compatible). Ollama needed more RAM/CPU than the VPS has;
+# DeepSeek is cheap enough for this project's volume that hosting
+# our own model isn't worth the resource cost.
+DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
+DEEPSEEK_BASE_URL = os.environ.get("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
+GENERATION_MODEL = os.environ.get("GENERATION_MODEL", "deepseek-v4-flash")
+
+
+
+
 
 # --- Frontend (Phase 9) --------------------------------------------------
 # Where the Streamlit app finds the FastAPI backend from Phase 8.

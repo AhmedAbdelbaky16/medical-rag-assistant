@@ -18,7 +18,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: raguser
-      POSTGRES_PASSWORD: ragpassword
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: medical_rag
     ports:
       - "5432:5432"
@@ -44,12 +44,9 @@ services:
         condition: service_healthy
     environment:
       DB_HOST: db
-      # host.docker.internal resolves to the host machine from inside
-      # a container — this is how the API reaches the Ollama instance
-      # running normally on your Windows machine, outside Docker.
-      OLLAMA_BASE_URL: http://host.docker.internal:11434
-    ports:
-      - "8000:8000"
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY}
+ 
 
   frontend:
     build: .

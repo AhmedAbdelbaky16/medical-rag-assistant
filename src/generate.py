@@ -23,7 +23,10 @@ import logging
 
 import requests
 
-from config import OLLAMA_BASE_URL, GENERATION_MODEL
+#from config import OLLAMA_BASE_URL, GENERATION_MODEL
+
+from config import DEEPSEEK_API_KEY, DEEPSEEK_BASE_URL, GENERATION_MODEL
+
 from retrieval import SearchResult
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -98,7 +101,7 @@ def build_user_prompt(question: str, context: str) -> str:
     return f"Sources:\n{context}\nQuestion: {question}"
 
 
-def call_ollama(model: str, system_prompt: str, user_prompt: str) -> str:
+#def call_ollama(model: str, system_prompt: str, user_prompt: str) -> str:
     response = requests.post(
         f"{OLLAMA_BASE_URL}/api/chat",
         json={
@@ -115,6 +118,23 @@ def call_ollama(model: str, system_prompt: str, user_prompt: str) -> str:
     response.raise_for_status()
     return response.json()["message"]["content"]
 
+def call_deepseek(model: str, system_prompt: str, user_prompt: str) -> str:
+    response = requests.post(
+        f"{DEEPSEEK_BASE_URL}/chat/completions",
+        headers={"Authorization": f"Bearer {DEEPSEEK_API_KEY}"},
+        json={
+            "model": model,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            "response_format": {"type": "json_object"},
+            "stream": False,
+        },
+        timeout=120,
+    )
+    response.raise_for_status()
+    return response.json()["choices"][0]["message"]["content"]
 
 def parse_generation_response(raw_content: str) -> dict:
     """
@@ -156,7 +176,7 @@ def generate_answer(question: str, results: list[SearchResult]) -> dict:
         }
 
     user_prompt = build_user_prompt(question, context)
-    raw_response = call_ollama(GENERATION_MODEL, SYSTEM_PROMPT, user_prompt)
+    raw_response = call_deepseek(GENERATION_MODEL, SYSTEM_PROMPT, user_prompt)
     parsed = parse_generation_response(raw_response)
     parsed["sources"] = included_results
     return parsed
@@ -179,7 +199,7 @@ def check_faithfulness(answer: str, context: str) -> dict:
     user_prompt = f"Sources:\n{context}\nAnswer to check: {answer}"
 
     try:
-        raw_response = call_ollama(FAITHFULNESS_MODEL, FAITHFULNESS_SYSTEM_PROMPT, user_prompt)
+        raw_response = call_deepseek(FAITHFULNESS_MODEL, FAITHFULNESS_SYSTEM_PROMPT, user_prompt)
         log.info(f"Raw faithfulness response: {raw_response!r}")
         data = json.loads(raw_response)
         return {
