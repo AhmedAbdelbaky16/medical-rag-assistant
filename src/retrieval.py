@@ -14,7 +14,7 @@ then only has to compete within the right drug's own content.
 
 from dataclasses import dataclass
 
-from config import DRUG_LIST
+from config import DRUG_LIST, BRAND_TO_GENERIC
 
 
 @dataclass
@@ -35,6 +35,24 @@ def detect_drug_filter(conn, question: str) -> list[int]:
     could match first and we'd filter to the wrong drug.
     """
     question_lower = question.lower()
+
+    # Check brand names first, longest first - same reasoning as the
+    # generic-name check below (a short match shouldn't win over a
+    # longer, more specific one).
+    brand_candidates = sorted(BRAND_TO_GENERIC.keys(), key=len, reverse=True)
+    for brand in brand_candidates:
+        if brand in question_lower:
+            generic_name = BRAND_TO_GENERIC[brand]
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT drug_id FROM drugs WHERE drug_name ILIKE %s;",
+                    (f"%{generic_name}%",),
+                )
+                rows = cur.fetchall()
+            if rows:
+                return [r[0] for r in rows]
+
+
     candidates = sorted(DRUG_LIST, key=len, reverse=True)
 
     for name in candidates:

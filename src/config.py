@@ -262,3 +262,59 @@ DRUG_LIST = [
     # Misc
     "epinephrine",
 ]
+
+# --- Brand name -> generic name mapping (Phase 11) ------------------------
+# Real visitors search brand names far more than generics. This maps
+# common brand names to the generic name as it appears in DRUG_LIST, so
+# "Advil" correctly filters to the ibuprofen entry instead of falling
+# back to general NSAID-class information. Not exhaustive - covers the
+# most commonly-searched consumer brands; easy to extend over time.
+BRAND_TO_GENERIC = {
+    "advil": "ibuprofen", "motrin": "ibuprofen",
+    "tylenol": "acetaminophen",
+    "aleve": "naproxen",
+    "zoloft": "sertraline",
+    "prozac": "fluoxetine",
+    "lexapro": "escitalopram",
+    "celexa": "citalopram",
+    "paxil": "paroxetine",
+    "wellbutrin": "bupropion",
+    "cymbalta": "duloxetine",
+    "effexor": "venlafaxine",
+    "xanax": "alprazolam",
+    "valium": "diazepam",
+    "ativan": "lorazepam",
+    "klonopin": "clonazepam",
+    "ambien": "zolpidem",
+    "lipitor": "atorvastatin",
+    "crestor": "rosuvastatin",
+    "zocor": "simvastatin",
+    "glucophage": "metformin",
+    "synthroid": "levothyroxine",
+    "nexium": "esomeprazole",
+    "prilosec": "omeprazole",
+    "benadryl": "diphenhydramine",
+    "claritin": "loratadine",
+    "zyrtec": "cetirizine",
+    "flonase": "fluticasone",
+    "ventolin": "albuterol", "proair": "albuterol",
+    "singulair": "montelukast",
+    "lasix": "furosemide",
+    "norvasc": "amlodipine",
+    "zestril": "lisinopril", "prinivil": "lisinopril",
+    "coumadin": "warfarin",
+    "plavix": "clopidogrel",
+    "amoxil": "amoxicillin",
+    "zithromax": "azithromycin",
+    "cipro": "ciprofloxacin",
+    "neurontin": "gabapentin",
+    "abilify": "aripiprazole",
+    "seroquel": "quetiapine",
+    "risperdal": "risperidone",
+    "ritalin": "methylphenidate",
+    "viagra": "sildenafil",
+    "cialis": "tadalafil",
+    "ozempic": "semaglutide",
+    "trulicity": "dulaglutide",
+    "jardiance": "empagliflozin",
+}
