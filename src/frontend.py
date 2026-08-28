@@ -12,7 +12,7 @@ how answers get generated, it just calls an API.
 Requires both running:
     - Postgres (docker compose up -d)
     - The API (python -m uvicorn api:app --reload, from src/)
-    - Ollama (ollama serve)
+    - Deepseek (deepseek serve)
 """
 
 import requests
@@ -108,7 +108,7 @@ def main():
                 except requests.exceptions.HTTPError as e:
                     if e.response is not None and e.response.status_code == 503:
                         st.error(
-                            "Backend can't reach Ollama. Is it running? (`ollama serve`)"
+                            "Backend can't reach the generation service. Please try again shortly? (`python -m uvicorn api:app --reload` from `src/`)"
                         )
                     else:
                         st.error(f"Request failed: {e}")

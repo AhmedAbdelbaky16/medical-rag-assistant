@@ -150,7 +150,7 @@ def ask(request: AskRequest):
         except http_requests.RequestException as e:
             raise HTTPException(
                 status_code=503,
-                detail=f"Could not reach the local Ollama server. Is it running? ({e})",
+                detail=f"Could not reach the generation service. ({e})",
             )
 
         faithfulness_out = None
